@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filebeat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: filebeat
+  template:
+    metadata:
+      labels:
+        app: filebeat
+    spec:
+      initContainers:
+        - name: init-myservice
+          image: busybox
+          command:
+            - sh
+            - -c
+            - chown -R 1000:1000 /usr/share/filebeat/logs
+          volumeMounts:
+            - name: containers
+              mountPath: "/usr/share/filebeat/logs"
+      containers:
+        - name: filebeat
+          image: docker.elastic.co/beats/filebeat:8.3.3
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: password
+              value: root
+          volumeMounts:
+            - name: config
+              mountPath: /usr/share/filebeat/filebeat.yml
+              subPath: filebeat.yml
+            - name: containers
+              mountPath: /usr/share/filebeat/logs
+      volumes:
+        - name: config
+          configMap:
+            name: filebeat-config
+        - name: containers
+          hostPath:
+            path: /var/lib/docker/containers

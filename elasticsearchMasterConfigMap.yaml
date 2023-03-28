@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-master-config
+data:
+  elasticsearch.yml: |
+    network.host: 0.0.0.0
+    xpack.security.enabled: false
+    search.allow_expensive_queries: false
+    cluster.routing.allocation.total_shards_per_node: 20
+    node.roles: [master, data]
+    node.name: master
+    node.master: true
+    node.data: false
+    node.ingest: false
+    cluster.initial_master_nodes: ["elasticsearch:9200"]
+    discovery.seed_hosts: ["elasticsearch:9200"]
